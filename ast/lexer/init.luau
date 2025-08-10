@@ -44,13 +44,13 @@ local singles = table.freeze({
     "[", "]", "{", "}",
     "(", ")", "=", "/",
     "+", "-", "*", ";",
-    ",", ".", "$", "->"
+    ",", ".", "$"
 })
 
 local doubles = table.freeze({
     "==", "!=", "+=", "-=",
     "/=", "..", ">=", "<=",
-    "++", "--"
+    "++", "--", "->"
 })
 
 local triples = table.freeze({
@@ -116,12 +116,12 @@ local function parseSymbol(source: string, start: number): (Token?, number)
         } :: Token, 1
     end
 
-    for _, v in singles do
+    for _, v in triples do
         if source:sub(start, start) == v then
             return {
                 kind = v,
-                pos = {start = start, finish = start}
-            } :: Token, 1
+                pos = {start = start, finish = start+2}
+            } :: Token, 3
         end
     end
 
@@ -134,12 +134,12 @@ local function parseSymbol(source: string, start: number): (Token?, number)
         end
     end
 
-    for _, v in triples do
+    for _, v in singles do
         if source:sub(start, start) == v then
             return {
                 kind = v,
-                pos = {start = start, finish = start+2}
-            } :: Token, 3
+                pos = {start = start, finish = start}
+            } :: Token, 1
         end
     end
 
