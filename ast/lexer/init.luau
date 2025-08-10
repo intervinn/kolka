@@ -28,6 +28,7 @@ export type Token =
 | {kind: "enum", pos: Pos}
 | {kind: "pkg", pos: Pos}
 | {kind: "local", pos: Pos}
+| {kind: "line", pos: Pos}
 
 -- TODO: Add operators to types
 
@@ -35,14 +36,15 @@ local reserved = table.freeze({
     "fun", "if", "else", "while",
     "end", "then", "true", "nil",
     "false", "type", "interface",
-    "enum", "class", "pkg", "local"
+    "enum", "class", "pkg", "local",
+    "in", "use"
 })
 
 local singles = table.freeze({
     "[", "]", "{", "}",
     "(", ")", "=", "/",
     "+", "-", "*", ";",
-    ",", ".", "$"
+    ",", ".", "$", "->"
 })
 
 local doubles = table.freeze({
@@ -59,6 +61,30 @@ local function strAt(str: string, at: number)
     return string.sub(str, at, at)
 end
 
+local function isIdent(char: string)
+    return char:match("^%a+$") == char or char == "_"
+end
+
+local function parseIdentifier(source: string, start: number): (Token?, number)
+    if not isIdent(strAt(source, start)) then return nil, 1 end
+
+    local finish = -1
+    for i = start+1,#source,1 do
+        if not isIdent(strAt(source, i)) then
+            finish = i-1
+            break
+        end
+    end
+
+    if finish == -1 then
+        return nil, 1
+    else
+        return {
+            kind = "identifier",
+            pos = {start = start, finish = finish}
+        } :: Token, finish - start + 1
+    end
+end
 
 local function parseString(source: string, start: number): (Token?, number)
     if strAt(source, start) ~= "\"" then return nil, 1 end
@@ -79,10 +105,17 @@ local function parseString(source: string, start: number): (Token?, number)
             start = start,
             finish = finish
         }
-    } :: Token, start - finish + 1
+    } :: Token, finish - start + 1
 end
 
 local function parseSymbol(source: string, start: number): (Token?, number)
+    if source:sub(start, start) == "\n" then
+        return {
+            kind = "line",
+            pos = {start = start, finish = start}
+        } :: Token, 1
+    end
+
     for _, v in singles do
         if source:sub(start, start) == v then
             return {
@@ -129,7 +162,7 @@ local function parseNumber(source: string, start: number): (Token?, number)
         return {
             kind = "number",
             pos = {start = start, finish = finish}
-        } :: Token, start - finish + 1
+        } :: Token, finish - start + 1
     end
 end
 
@@ -155,7 +188,7 @@ local function parse(source: string): {Token}
     local index = 1
     local eof = #source
     local result = {}
-    local parsers = {parseSymbol, parseString, parseNumber, parseKeyword, parseBad}
+    local parsers = {parseSymbol, parseString, parseNumber, parseKeyword, parseIdentifier, parseBad}
 
     while true do
         if index == eof then
@@ -180,3 +213,7 @@ local function parse(source: string): {Token}
 
     return result
 end
+
+return {
+    parse = parse
+}
