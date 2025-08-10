@@ -44,7 +44,7 @@ local singles = table.freeze({
     "[", "]", "{", "}",
     "(", ")", "=", "/",
     "+", "-", "*", ";",
-    ",", ".", "$"
+    ",", ".", "$", ":"
 })
 
 local doubles = table.freeze({
