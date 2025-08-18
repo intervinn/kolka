@@ -9,10 +9,46 @@ export type Source = {
     text: string
 }
 
-export type Token =
-| {kind: "string", text: string, pos: Pos}
+export type Identifier = {kind: "identifier", text: string, pos: Pos}
+
+export type Literal = 
+{kind: "string", text: string, pos: Pos}
 | {kind: "number", text: string, pos: Pos}
-| {kind: "identifier", text: string, pos: Pos}
+
+export type BinaryOperator =
+{kind: "+", pos: Pos}
+| {kind: "/", pos: Pos}
+| {kind: "-", pos: Pos}
+| {kind: "*", pos: Pos}
+| {kind: "//", pos: Pos}
+| {kind: "^", pos: Pos}
+| {kind: "%", pos: Pos}
+| {kind: "..", pos: Pos}
+| {kind: "+=", pos: Pos}
+| {kind: "-=", pos: Pos}
+| {kind: "/=", pos: Pos}
+| {kind: "*=", pos: Pos}
+| {kind: "//=", pos: Pos}
+| {kind: "^=", pos: Pos}
+| {kind: "%=", pos: Pos}
+| {kind: "..=", pos: Pos}
+| {kind: ">", pos: Pos}
+| {kind: "<", pos: Pos}
+| {kind: ">=", pos: Pos}
+| {kind: "<=", pos: Pos}
+| {kind: "==", pos: Pos}
+| {kind: "~=", pos: Pos}
+| {kind: "and", pos: Pos}
+| {kind: "or", pos: Pos}
+
+export type UnaryOperator =
+{kind: "#", pos: Pos}
+| {kind: "not", pos: Pos}
+| {kind: "-", pos: Pos}
+
+export type Token =
+Literal
+| Identifier
 | {kind: "fun", pos: Pos}
 | {kind: "if", pos: Pos}
 | {kind: "else", pos: Pos}
@@ -29,32 +65,33 @@ export type Token =
 | {kind: "pkg", pos: Pos}
 | {kind: "local", pos: Pos}
 | {kind: "line", pos: Pos}
-
--- TODO: Add operators to types
+| {kind: "=", pos: Pos}
+| BinaryOperator
 
 local reserved = table.freeze({
     "fun", "if", "else", "while",
     "end", "then", "true", "nil",
     "false", "type", "interface",
     "enum", "class", "pkg", "local",
-    "in", "use"
+    "in", "use", "and"
 })
 
 local singles = table.freeze({
     "[", "]", "{", "}",
     "(", ")", "=", "/",
     "+", "-", "*", ";",
-    ",", ".", "$", ":"
+    ",", ".", "$", ":",
+    "#", "^"
 })
 
 local doubles = table.freeze({
     "==", "!=", "+=", "-=",
     "/=", "..", ">=", "<=",
-    "++", "--", "->"
+    "^=", "->", "//"
 })
 
 local triples = table.freeze({
-    "..="
+    "..=", "//="
 })
 
 local function strAt(str: string, at: number)

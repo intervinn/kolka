@@ -3,14 +3,27 @@ local stdio = require("@lune/stdio")
 
 local toks = lexer.parse([[
     interface ISignal
-        :Connect()
+        local function Connect()
     end
 
     class Signal : ISignal
-        [Operator("+=")]
-        :Connect(func: () -> ())
+        local some = 5 -- class field
+        other = 10 -- static field
+
+        @native
+        @inline
+        @operator("+=")
+        local function Connect(func: () -> ())
             table.insert(self.items, func)
         end        
+    end
+
+    local thing = 5
+    local isFive = match thing
+        [x==1] = false,
+        [x==2] = function() return false end,
+        [x==5] = true,
+        _ = false
     end
 ]])
 
